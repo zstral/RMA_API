@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Clima Actual consumiendo api de OpenMeteo -->
+    <div class="card mb-4" id="currentWeather">
+        <div class="card-body">
+            <h5 class="card-title">Clima en tu Ubicación Actual</h5>
+            <div id="weatherData">
+                <p>Cargando datos climáticos...</p>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="mb-4">Estaciones Meteorológicas</h2>
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Región</th>
+                <th>Latitud</th>
+                <th>Longitud</th>
+                <th>Altura</th>
+                <th>Zona</th>
+                <th>Datos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estacion in estaciones %}
+            <tr>
+                <td>{{ estacion.nombre }}</td>
+                <td>{{ estacion.region }}</td>
+                <td>{{ estacion.latitud }}</td>
+                <td>{{ estacion.longitud }}</td>
+                <td>{{ estacion.altura }} m</td>
+                <td>{{ estacion.zona_geografica }}</td>
+                <td>
+                    <a href="{{ estacion.url_datos }}" target="_blank" class="btn btn-sm btn-primary">Ver</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+$(document).ready(function() {
+    function loadWeather(lat, lon, isFallback = false) {
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            console.error('Coordenadas inválidas:', { lat, lon });
+            $('#weatherData').html('<p>Coordenadas inválidas. No se pueden cargar los datos climáticos.</p>');
+            return;
+        }
+
+        var url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,wind_speed_10m&timezone=auto`;
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function(data) {
+                var html = `
+                    <p><strong>Temperatura:</strong> ${data.current.temperature_2m} °C</p>
+                    <p><strong>Precipitación:</strong> ${data.current.precipitation} mm</p>
+                    <p><strong>Viento:</strong> ${data.current.wind_speed_10m} km/h</p>
+                `;
+                $('#weatherData').html(html);
+            },
+            error: function(xhr) {
+                console.error('Error al obtener datos climáticos:', {
+                    status: xhr.status,
+                    responseText: xhr.responseText,
+                    url: url
+                });
+                var errorMsg = isFallback
+                    ? '<p>Error al cargar datos climáticos para la ubicación predeterminada.</p>'
+                    : '<p>Error al cargar datos climáticos. Usando ubicación predeterminada...</p>';
+                $('#weatherData').html(errorMsg);
+
+                if (!isFallback) {
+                    loadWeather(-33.45, -70.65, true);
+                }
+            }
+        });
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                var lat = position.coords.latitude;
+                var lon = position.coords.longitude;
+                console.log('Coordenadas obtenidas:', { lat, lon });
+                loadWeather(lat, lon);
+            },
+            function(error) {
+                console.error('Error de geolocalización:', error.message, error.code);
+                $('#weatherData').html('<p>No se pudo obtener tu ubicación. Usando ubicación predeterminada...</p>');
+                loadWeather(-33.45, -70.65, true);
+            },
+            { timeout: 10000, enableHighAccuracy: true }
+        );
+    } else {
+        console.error('Geolocalización no soportada por el navegador');
+        $('#weatherData').html('<p>La geolocalización no es compatible con tu navegador. Usando ubicación predeterminada...</p>');
+        loadWeather(-33.45, -70.65, true);
+    }
+});
+</script>
+{% endblock %}

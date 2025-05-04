@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Panel de Administración</h2>
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createModal">Crear Estación</button>
+    <table id="estacionesTable" class="table table-striped table-bordered" style="width:100%">
+        <thead>
+            <tr>
+                <th>Código Nacional</th>
+                <th>Nombre</th>
+                <th>Latitud</th>
+                <th>Longitud</th>
+                <th>Altura (m)</th>
+                <th>Zona Geográfica</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estacion in estaciones %}
+                <tr>
+                    <td>{{ estacion.codigo_nacional }}</td>
+                    <td>{{ estacion.nombre }}</td>
+                    <td>{{ estacion.latitud }}</td>
+                    <td>{{ estacion.longitud }}</td>
+                    <td>{{ estacion.altura }}</td>
+                    <td>{{ estacion.zona_geografica }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning edit-btn" data-codigo="{{ estacion.codigo_nacional }}">Editar</button>
+                        <button class="btn btn-sm btn-danger delete-btn" data-codigo="{{ estacion.codigo_nacional }}">Eliminar</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Crear -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createModalLabel">Crear Estación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="codigo_nacional" class="form-label">Código Nacional</label>
+                        <input type="number" class="form-control" id="codigo_nacional" name="codigo_nacional" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="latitud" class="form-label">Latitud</label>
+                        <input type="number" step="any" class="form-control" id="latitud" name="latitud" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="longitud" class="form-label">Longitud</label>
+                        <input type="number" step="any" class="form-control" id="longitud" name="longitud" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="altura" class="form-label">Altura (m)</label>
+                        <input type="number" class="form-control" id="altura" name="altura" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="zona_geografica" class="form-label">Zona Geográfica</label>
+                        <input type="text" class="form-control" id="zona_geografica" name="zona_geografica" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigo_omm" class="form-label">Código OMM</label>
+                        <input type="text" class="form-control" id="codigo_omm" name="codigo_omm">
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigo_oaci" class="form-label">Código OACI</label>
+                        <input type="text" class="form-control" id="codigo_oaci" name="codigo_oaci">
+                    </div>
+                    <div class="mb-3">
+                        <label for="region" class="form-label">Región</label>
+                        <input type="number" class="form-control" id="region" name="region" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="url_datos" class="form-label">URL Datos</label>
+                        <input type="url" class="form-control" id="url_datos" name="url_datos" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Crear</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Editar Estación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div id="editFormContainer"></div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que quieres eliminar esta estación?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+    var table = $('#estacionesTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        pageLength: 10,
+        order: [[1, 'asc']],
+    });
+
+    // Crear Estación
+    $('#createForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: '{% url "create_estacion" %}',
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    table.row.add([
+                        response.estacion.codigo_nacional,
+                        response.estacion.nombre,
+                        response.estacion.latitud,
+                        response.estacion.longitud,
+                        response.estacion.altura,
+                        response.estacion.zona_geografica,
+                        '<button class="btn btn-sm btn-warning edit-btn" data-codigo="' + response.estacion.codigo_nacional + '">Editar</button> ' +
+                        '<button class="btn btn-sm btn-danger delete-btn" data-codigo="' + response.estacion.codigo_nacional + '">Eliminar</button>'
+                    ]).draw();
+                    $('#createModal').modal('hide');
+                    $('#createForm')[0].reset();
+                } else {
+                    alert('Error: ' + JSON.stringify(response.errors));
+                }
+            },
+            error: function(xhr) {
+                console.error('Error al crear:', xhr.responseText);
+                alert('Error al crear la estación.');
+            }
+        });
+    });
+
+    // Editar Estación
+    $(document).on('click', '.edit-btn', function() {
+        var codigo = $(this).data('codigo');
+        $.ajax({
+            url: '{% url "edit_estacion" codigo_nacional=0 %}'.replace('0', codigo),
+            method: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $('#editFormContainer').html(response.form);
+                    $('#editForm').prepend('{% csrf_token %}');
+                    $('#editModal').modal('show');
+                } else {
+                    console.error('Error al cargar formulario:', response);
+                    alert('Error al cargar el formulario de edición.');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error al cargar:', xhr.responseText);
+                alert('Error al cargar el formulario de edición.');
+            }
+        });
+    });
+
+    $('#editForm').on('submit', function(e) {
+        e.preventDefault();
+        var codigo = $('#editFormContainer input[name="codigo_nacional"]').val();
+        $.ajax({
+            url: '{% url "edit_estacion" codigo_nacional=0 %}'.replace('0', codigo),
+            method: 'POST',
+            data: $(this).serialize(),
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+            },
+            success: function(response) {
+                if (response.success) {
+                    var row = table.rows(function(idx, data) {
+                        return data[0] == response.estacion.codigo_nacional;
+                    });
+                    row.data([
+                        response.estacion.codigo_nacional,
+                        response.estacion.nombre,
+                        response.estacion.latitud,
+                        response.estacion.longitud,
+                        response.estacion.altura,
+                        response.estacion.zona_geografica,
+                        '<button class="btn btn-sm btn-warning edit-btn" data-codigo="' + response.estacion.codigo_nacional + '">Editar</button> ' +
+                        '<button class="btn btn-sm btn-danger delete-btn" data-codigo="' + response.estacion.codigo_nacional + '">Eliminar</button>'
+                    ]).draw();
+                    $('#editModal').modal('hide');
+                } else {
+                    console.error('Error al guardar:', response.errors);
+                    alert('Error: ' + JSON.stringify(response.errors));
+                }
+            },
+            error: function(xhr) {
+                console.error('Error al guardar:', xhr.responseText);
+                alert('Error al guardar los cambios.');
+            }
+        });
+    });
+
+    // Eliminar Estación
+    $(document).on('click', '.delete-btn', function() {
+        var codigo = $(this).data('codigo');
+        $('#confirmDelete').data('codigo', codigo);
+        $('#deleteModal').modal('show');
+    });
+
+    $('#confirmDelete').on('click', function() {
+        var codigo = $(this).data('codigo');
+        $.ajax({
+            url: '{% url "delete_estacion" codigo_nacional=0 %}'.replace('0', codigo),
+            method: 'POST',
+            data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+            success: function(response) {
+                if (response.success) {
+                    table.rows(function(idx, data) {
+                        return data[0] == codigo;
+                    }).remove().draw();
+                    $('#deleteModal').modal('hide');
+                } else {
+                    console.error('Error al eliminar:', response);
+                    alert('Error al eliminar la estación.');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error al eliminar:', xhr.responseText);
+                alert('Error al eliminar la estación.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

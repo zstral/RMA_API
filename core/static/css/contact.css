@@ -1,0 +1,10 @@
+.contact-page {
+    margin: 6rem;
+    overflow: hidden;
+    color: #363636;
+    background-color: #dbdbdb;
+    background-image: url('../images/img-signup.jpg');
+    background-size: cover;
+    height: 70vh;
+    width: 40vw;
+}
