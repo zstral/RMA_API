@@ -18,7 +18,7 @@ def home(request, section=None):
         'dashboard-admin': {'template': 'dashboard-admin.html', 'title': 'Panel de Administración', 'stylesheet': 'css/dashboard-admin.css', 'decorator': admin_required},
         'map': {'template': 'map.html', 'title': 'Mapa', 'stylesheet': 'css/map.css'},
         'contact': {'template': 'contact.html', 'title': 'Contacto', 'stylesheet': 'css/contact.css'},
-        'api': {'template': 'api.html', 'title': 'Api', 'stylesheet': 'css/api.css'},
+        'api': {'template': 'api.html', 'title': 'API', 'stylesheet': 'css/api.css'},
         'products': {'template': 'products.html', 'title': 'Productos', 'stylesheet': 'css/products.css'},
         'signup': {'template': 'signup.html', 'title': 'Registrarse', 'stylesheet': 'css/signup.css'},
     }
@@ -142,7 +142,7 @@ def edit_estacion(request, codigo_nacional):
 
 @require_POST
 @admin_required
-def delete_estacion(request, codigo_nacional):
+def delete_estacion(codigo_nacional):
     estacion = get_object_or_404(EstacionMeteorologica, codigo_nacional=codigo_nacional)
     estacion.delete()
     return JsonResponse({'success': True})

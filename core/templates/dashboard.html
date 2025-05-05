@@ -3,12 +3,23 @@
 
 {% block content %}
 <div class="container mt-5">
-    <!-- Clima Actual consumiendo api de OpenMeteo -->
-    <div class="card mb-4" id="currentWeather">
-        <div class="card-body">
-            <h5 class="card-title">Clima en tu Ubicación Actual</h5>
-            <div id="weatherData">
-                <p>Cargando datos climáticos...</p>
+    
+    <!-- Clima Actual y Calidad del Aire consumiendo APIs de Open-Meteo -->
+    <div class="row">
+        <div class="col-md-6 card mb-4" id="currentWeather">
+            <div class="card-body">
+                <h5 class="card-title">Clima en tu ubicación actual</h5>
+                <div id="weatherData">
+                    <p>Cargando datos climáticos...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 card mb-4" id="currentAirCondition">
+            <div class="card-body">
+                <h5 class="card-title">Condición del Aire</h5>
+                <div id="airConditionData">
+                    <p>Cargando datos de calidad del aire...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -44,44 +55,105 @@
     </table>
 </div>
 
+<link href="{% static 'css/dashboard_admin.css' %}" rel="stylesheet">
+
 <script>
 $(document).ready(function() {
-    function loadWeather(lat, lon, isFallback = false) {
+    function loadWeatherAndAirQuality(lat, lon, isFallback = false) {
         if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
             console.error('Coordenadas inválidas:', { lat, lon });
-            $('#weatherData').html('<p>Coordenadas inválidas. No se pueden cargar los datos climáticos.</p>');
+            $('#weatherData').html('<p>Error: Coordenadas inválidas.</p>');
+            $('#airConditionData').html('<p>Error: Coordenadas inválidas.</p>');
             return;
         }
 
-        var url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,wind_speed_10m&timezone=auto`;
+        var weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,precipitation,wind_speed_10m&timezone=auto`;
+        var airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=pm10,pm2_5,carbon_monoxide,european_aqi`;
+
+        console.log('URL Clima:', weatherUrl);
+        console.log('URL Calidad del Aire:', airQualityUrl);
 
         $.ajax({
-            url: url,
+            url: weatherUrl,
             method: 'GET',
+            timeout: 5000,
             success: function(data) {
-                var html = `
-                    <p><strong>Temperatura:</strong> ${data.current.temperature_2m} °C</p>
-                    <p><strong>Precipitación:</strong> ${data.current.precipitation} mm</p>
-                    <p><strong>Viento:</strong> ${data.current.wind_speed_10m} km/h</p>
-                `;
-                $('#weatherData').html(html);
+                if (data.current) {
+                    var html = `
+                        <p><strong>Temperatura:</strong> ${data.current.temperature_2m} °C</p>
+                        <p><strong>Precipitación:</strong> ${data.current.precipitation} mm</p>
+                        <p><strong>Viento:</strong> ${data.current.wind_speed_10m} km/h</p>
+                    `;
+                    $('#weatherData').html(html);
+                } else {
+                    $('#weatherData').html('<p>Error: Datos climáticos no disponibles.</p>');
+                }
             },
-            error: function(xhr) {
+            error: function(xhr, status, error) {
                 console.error('Error al obtener datos climáticos:', {
                     status: xhr.status,
-                    responseText: xhr.responseText,
-                    url: url
+                    responseText: xhr.responseText || 'Sin respuesta',
+                    url: weatherUrl,
+                    error: error
                 });
                 var errorMsg = isFallback
                     ? '<p>Error al cargar datos climáticos para la ubicación predeterminada.</p>'
-                    : '<p>Error al cargar datos climáticos. Usando ubicación predeterminada...</p>';
+                    : '<p>Error al cargar datos climáticos. Intentando con ubicación predeterminada...</p>';
                 $('#weatherData').html(errorMsg);
-
-                if (!isFallback) {
-                    loadWeather(-33.45, -70.65, true);
-                }
             }
         });
+
+        $.ajax({
+            url: airQualityUrl,
+            method: 'GET',
+            timeout: 5000,
+            success: function(data) {
+                if (data.current) {
+                    var current = data.current;
+                    var aqi = current.european_aqi;
+                    var aqiColor = '';
+                    var aqiLabel = '';
+                    if (aqi <= 20) { aqiColor = 'green'; aqiLabel = 'Bueno'; }
+                    else if (aqi <= 40) { aqiColor = 'lightgreen'; aqiLabel = 'Moderado'; }
+                    else if (aqi <= 60) { aqiColor = 'yellow'; aqiLabel = 'Regular'; }
+                    else if (aqi <= 80) { aqiColor = 'orange'; aqiLabel = 'Malo'; }
+                    else { aqiColor = 'red'; aqiLabel = 'Muy Malo'; }
+
+                    var html = `
+                        <p><strong>PM10:</strong> ${current.pm10} µg/m³</p>
+                        <p><strong>PM2.5:</strong> ${current.pm2_5} µg/m³</p>
+                        <p><strong>Monóxido de Carbono:</strong> ${current.carbon_monoxide} µg/m³</p>
+                        <p><strong>Índice de Calidad del Aire (AQI):</strong> 
+                            <span style="color: ${aqiColor}">${aqi} (${aqiLabel})</span>
+                        </p>`;
+                    $('#airConditionData').html(html);
+                } else {
+                    $('#airConditionData').html('<p>Error: Datos de calidad del aire no disponibles.</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error al obtener datos de calidad del aire:', {
+                    status: xhr.status,
+                    responseText: xhr.responseText || 'Sin respuesta',
+                    url: airQualityUrl,
+                    error: error
+                });
+                var errorMsg = isFallback
+                    ? '<p>Error al cargar datos de calidad del aire para la ubicación predeterminada.</p>'
+                    : '<p>Error al cargar datos de calidad del aire. Intentando con ubicación predeterminada...</p>';
+                $('#airConditionData').html(errorMsg);
+            }
+        });
+
+        if (!isFallback) {
+            $.when(
+                $.ajax({ url: weatherUrl, method: 'GET', timeout: 5000 }),
+                $.ajax({ url: airQualityUrl, method: 'GET', timeout: 5000 })
+            ).fail(function() {
+                console.log('Ambas solicitudes fallaron. Intentando con ubicación predeterminada...');
+                loadWeatherAndAirQuality(-33.45, -70.65, true);
+            });
+        }
     }
 
     if (navigator.geolocation) {
@@ -90,19 +162,24 @@ $(document).ready(function() {
                 var lat = position.coords.latitude;
                 var lon = position.coords.longitude;
                 console.log('Coordenadas obtenidas:', { lat, lon });
-                loadWeather(lat, lon);
+                loadWeatherAndAirQuality(lat, lon);
             },
             function(error) {
-                console.error('Error de geolocalización:', error.message, error.code);
+                console.error('Error de geolocalización:', {
+                    message: error.message,
+                    code: error.code
+                });
                 $('#weatherData').html('<p>No se pudo obtener tu ubicación. Usando ubicación predeterminada...</p>');
-                loadWeather(-33.45, -70.65, true);
+                $('#airConditionData').html('<p>No se pudo obtener tu ubicación. Usando ubicación predeterminada...</p>');
+                loadWeatherAndAirQuality(-33.45, -70.65, true);
             },
             { timeout: 10000, enableHighAccuracy: true }
         );
     } else {
         console.error('Geolocalización no soportada por el navegador');
         $('#weatherData').html('<p>La geolocalización no es compatible con tu navegador. Usando ubicación predeterminada...</p>');
-        loadWeather(-33.45, -70.65, true);
+        $('#airConditionData').html('<p>La geolocalización no es compatible con tu navegador. Usando ubicación predeterminada...</p>');
+        loadWeatherAndAirQuality(-33.45, -70.65, true);
     }
 });
 </script>

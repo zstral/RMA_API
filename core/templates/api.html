@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container endpoint-page mt-5">
+    <h2>Documentación de la API</h2>
+    <p>Esta página describe los endpoints disponibles en la API de RMA_API. Cada endpoint incluye su método HTTP, parámetros, respuestas esperadas y ejemplos de uso.</p>
+
+    <h3>Endpoints Disponibles</h3>
+    <div class="endpoint">
+        <h4>1. Lista de Estaciones Meteorológicas</h4>
+        <table class="table table-bordered">
+            <tr>
+                <th>Atributo</th>
+                <th>Descripción</th>
+            </tr>
+            <tr>
+                <td><strong>URL</strong></td>
+                <td><code>/api/estaciones/</code></td>
+            </tr>
+            <tr>
+                <td><strong>Métodos</strong></td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td><strong>Descripción</strong></td>
+                <td>
+                    <ul>
+                        <li><strong>GET</strong>: Obtiene la lista de todas las estaciones meteorológicas.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Parámetros (GET)</strong></td>
+                <td>Ninguno</td>
+            </tr>
+            <tr>
+                <td><strong>Respuesta (GET)</strong></td>
+                <td>
+                    <pre>
+[
+    {
+        "id": 1,
+        "codigo_nacional": 1,
+        "nombre": "Estación 1",
+        "latitud": -33.45,
+        "longitud": -70.65,
+        "altura": 500.0,
+        "region": 13,
+        "zona_geografica": "Central",
+        "url_datos": "http://example.com"
+    },
+    ...
+]
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Códigos de Estado</strong></td>
+                <td>
+                    <ul>
+                        <li><strong>200 OK</strong>: Solicitud GET exitosa.</li>
+                        <li><strong>401 Unauthorized</strong>: Autenticación requerida (GET).</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Ejemplo (GET)</strong></td>
+                <td>
+                    <pre>
+GET http://127.0.0.1:8000/api/estaciones/
+                    </pre>
+                </td>
+            </tr>
+        </table>
+
+        <table class="table table-bordered">
+            <tr>
+                <th>Atributo</th>
+                <th>Descripción</th>
+            </tr>
+            <tr>
+                <td><strong>URL</strong></td>
+                <td><code>/api/estaciones/000000</code></td>
+            </tr>
+            <tr>
+                <td><strong>Métodos</strong></td>
+                <td>GET</td>
+            </tr>
+            <tr>
+                <td><strong>Descripción</strong></td>
+                <td>
+                    <ul>
+                        <li><strong>GET</strong>: Obtiene el detalle de una estación meteorológica por su código nacional.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Parámetros (GET)</strong></td>
+                <td>Número de código nacional 6 dígitos</td>
+            </tr>
+            <tr>
+                <td><strong>Respuesta (GET)</strong></td>
+                <td>
+                    <pre>
+[
+    {
+        "codigo_nacional": 410005,
+        "codigo_omm": "85799",
+        "codigo_oaci": "SCTE",
+        "nombre": "El Tepual  Puerto Montt Ap.",
+        "latitud": -41.4475,
+        "longitud": -73.09583,
+        "altura": 90,
+        "region": 10,
+        "zona_geografica": "Valle",
+        "url_datos": "https://climatologia.meteochile.gob.cl/application/productos/datosRecientesEma/410005"
+    },
+    ...
+]
+                    </pre>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Códigos de Estado</strong></td>
+                <td>
+                    <ul>
+                        <li><strong>200 OK</strong>: Solicitud GET exitosa.</li>
+                        <li><strong>401 Unauthorized</strong>: Autenticación requerida (GET).</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Ejemplo (GET)</strong></td>
+                <td>
+                    <pre>
+GET http://127.0.0.1:8000/api/estaciones/410005
+                    </pre>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+{% endblock %}
