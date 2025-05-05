@@ -19,7 +19,6 @@ def home(request, section=None):
         'map': {'template': 'map.html', 'title': 'Mapa', 'stylesheet': 'css/map.css'},
         'contact': {'template': 'contact.html', 'title': 'Contacto', 'stylesheet': 'css/contact.css'},
         'api': {'template': 'api.html', 'title': 'API', 'stylesheet': 'css/api.css'},
-        'products': {'template': 'products.html', 'title': 'Productos', 'stylesheet': 'css/products.css'},
         'signup': {'template': 'signup.html', 'title': 'Registrarse', 'stylesheet': 'css/signup.css'},
     }
     data_section = sections.get(section, sections[None])
