@@ -7,8 +7,7 @@ from django.db import IntegrityError
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics, permissions
 from .serializers import EstacionMeteorologicaSerializer
 
 def home(request, section=None):
@@ -151,10 +150,10 @@ def delete_estacion(codigo_nacional):
 class EstacionesLista(generics.ListAPIView):
     queryset = EstacionMeteorologica.objects.all()
     serializer_class = EstacionMeteorologicaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
 class EstacionCodigo(generics.RetrieveAPIView):
     queryset = EstacionMeteorologica.objects.all()
     serializer_class = EstacionMeteorologicaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'codigo_nacional'

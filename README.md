@@ -15,6 +15,9 @@
 A - Dentro de la página no podrás acceder a la función Dashboard y API al menos que crees una cuenta de usuario.
 (Las cuentas de usuario creadas se asocian a la tabla UserProfile con un rol por defecto de User)
 
+A.1 - Para consumir la API debes tener un usuario (user) y usar una herramienta de preferencia para las solicitudes GET y POST.
+Al crear la solicitud debes hacerlo en formato JSON indicando tus credenciales para obtenr un token que expira en 5 min, luego al obtener tu token puedes usar las solicitudes GET ingresando un Header Name(Authorization) y un Header Value("Token").
+
 B - Si deseas acceder al Dashboard Admin debes crear una cuenta con rol Admin siguiendo estos pasos.
 (Esta función no está pensada para el usuario final.)
 
