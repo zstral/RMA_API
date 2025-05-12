@@ -20,7 +20,7 @@ import oracledb
 import os
 from dotenv import load_dotenv
 load_dotenv(dotenv_path= BASE_DIR / '.env')
-# oracledb.init_oracle_client(lib_dir=os.path.join(BASE_DIR, "oracle_wallet"))
+oracledb.init_oracle_client(lib_dir=None)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -86,11 +86,9 @@ WSGI_APPLICATION = 'RMA_API.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': os.getenv('DB_SERVICE'),
+        'NAME': f"(DESCRIPTION=(ADDRESS=(PROTOCOL=tcps)(HOST={os.getenv('DB_HOST')})(PORT={os.getenv('DB_PORT')}))(CONNECT_DATA=(SERVICE_NAME={os.getenv('DB_SERVICE')})))",
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
     }
 }
 
