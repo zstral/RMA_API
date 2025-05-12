@@ -20,7 +20,8 @@ import oracledb
 import os
 from dotenv import load_dotenv
 load_dotenv(dotenv_path= BASE_DIR / '.env')
-oracledb.init_oracle_client(lib_dir=None)
+# oracledb.init_oracle_client(lib_dir=None)
+#Se elimina la inicialización de oracle para que funcione en Render
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
