@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'RMA_API.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': f"(DESCRIPTION=(ADDRESS=(PROTOCOL=tcps)(HOST={os.getenv('DB_HOST')})(PORT={os.getenv('DB_PORT')}))(CONNECT_DATA=(SERVICE_NAME={os.getenv('DB_SERVICE')})))",
+        'NAME': os.getenv('DB_DSN'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
     }
