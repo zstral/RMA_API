@@ -20,7 +20,7 @@ import oracledb
 import os
 from dotenv import load_dotenv
 load_dotenv(dotenv_path= BASE_DIR / '.env')
-oracledb.init_oracle_client(lib_dir=os.path.join(BASE_DIR, "oracle_wallet"))
+# oracledb.init_oracle_client(lib_dir=os.path.join(BASE_DIR, "oracle_wallet"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
